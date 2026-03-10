@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>⛏️ Minecraft Quiz — Block Master</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --grass: #5D9C22;
+    --grass-dark: #3E7A10;
+    --dirt: #8B5E3C;
+    --dirt-dark: #6B4226;
+    --stone: #8A8A8A;
+    --diamond: #4FECEC;
+    --diamond-glow: #00FFFF;
+    --gold: #FFD700;
+    --gold-glow: #FFA500;
+    --redstone: #FF3333;
+    --redstone-glow: #FF6B6B;
+    --emerald: #00D26A;
+    --sky: #87CEEB;
+    --night: #0D1B2A;
+    --wood: #C4A35A;
+    --creeper: #5FB83A;
+    --lapis: #1D6FA4;
+    --nether: #8C1C13;
+    --bg: #0D1B2A;
+    --card: #1A2D3E;
+    --card-border: #2A4D6E;
+    --text: #F0F0F0;
+    --text-dim: #8AABB8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Pixel star background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 10%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 20% 90%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 80% 15%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(2px 2px at 55% 50%, rgba(79,236,236,0.3) 0%, transparent 100%),
+      radial-gradient(2px 2px at 35% 35%, rgba(255,215,0,0.2) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .screen {
+    display: none;
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+  }
+  .screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+
+  /* ===== LANDING SCREEN ===== */
+  #screen-home {
+    background: linear-gradient(180deg, #0D1B2A 0%, #1A3A5C 50%, #0D1B2A 100%);
+  }
+
+  .logo-container {
+    text-align: center;
+    margin-bottom: 30px;
+    animation: floatLogo 3s ease-in-out infinite;
+  }
+
+  @keyframes floatLogo {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  .logo-block {
+    display: inline-block;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(22px, 6vw, 42px);
+    color: var(--grass);
+    text-shadow:
+      3px 3px 0 var(--grass-dark),
+      6px 6px 0 rgba(0,0,0,0.5),
+      0 0 30px rgba(93,156,34,0.4);
+    letter-spacing: 2px;
+    line-height: 1.4;
+  }
+
+  .logo-sub {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(8px, 2.5vw, 14px);
+    color: var(--diamond);
+    text-shadow: 0 0 15px var(--diamond-glow);
+    margin-top: 8px;
+    letter-spacing: 3px;
+  }
+
+  /* Floating blocks */
+  .floating-blocks {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+
+  .block {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border: 2px solid rgba(255,255,255,0.1);
+    animation: floatBlock linear infinite;
+    opacity: 0.15;
+  }
+
+  .block-grass { background: var(--grass); }
+  .block-dirt { background: var(--dirt); }
+  .block-stone { background: var(--stone); }
+  .block-diamond { background: var(--diamond); opacity: 0.25; }
+  .block-gold { background: var(--gold); opacity: 0.2; }
+
+  @keyframes floatBlock {
+    0% { transform: translateY(110vh) rotate(0deg); }
+    100% { transform: translateY(-150px) rotate(360deg); }
+  }
+
+  /* Home card */
+  .home-card {
+    background: rgba(26, 45, 62, 0.9);
+    border: 3px solid var(--grass);
+    border-radius: 4px;
+    padding: 32px 28px;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(93,156,34,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
+    position: relative;
+  }
+
+  .home-card::before {
+    content: '';
+    position: absolute;
+    top: -3px; left: -3px; right: -3px;
+    height: 8px;
+    background: repeating-linear-gradient(90deg, var(--grass) 0px, var(--grass) 8px, var(--grass-dark) 8px, var(--grass-dark) 16px);
+    border-radius: 4px 4px 0 0;
+  }
+
+  .home-stats {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: 20px 0;
+  }
+
+  .stat-badge {
+    background: rgba(0,0,0,0.3);
+    border: 2px solid var(--card-border);
+    border-radius: 4px;
+    padding: 10px 16px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    line-height: 1.8;
+  }
+
+  .stat-badge .val {
+    display: block;
+    font-size: 16px;
+    color: var(--gold);
+    text-shadow: 0 0 10px var(--gold-glow);
+  }
+
+  .stat-badge .lbl { color: var(--text-dim); font-size: 6px; }
+
+  /* Buttons */
+  .btn {
+    display: inline-block;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(8px, 2.5vw, 12px);
+    padding: 14px 28px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.1s;
+    position: relative;
+    letter-spacing: 1px;
+    width: 100%;
+    margin: 6px 0;
+  }
+
+  .btn:active { transform: translateY(3px); }
+
+  .btn-play {
+    background: var(--grass);
+    color: #fff;
+    box-shadow: 0 6px 0 var(--grass-dark), 0 8px 15px rgba(93,156,34,0.4);
+    text-shadow: 1px 1px 0 var(--grass-dark);
+  }
+  .btn-play:hover { background: #6DC228; box-shadow: 0 6px 0 var(--grass-dark), 0 8px 25px rgba(93,156,34,0.6); }
+
+  .btn-scores {
+    background: var(--lapis);
+    color: #fff;
+    box-shadow: 0 6px 0 #0E4A75, 0 8px 15px rgba(29,111,164,0.4);
+  }
+  .btn-scores:hover { background: #2280B5; }
+
+  .btn-hint {
+    background: var(--gold);
+    color: #1A0A00;
+    box-shadow: 0 4px 0 #B8860B, 0 6px 12px rgba(255,215,0,0.3);
+    font-size: 10px;
+    padding: 10px 20px;
+    width: auto;
+  }
+  .btn-hint:hover { background: #FFE033; }
+  .btn-hint:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-skip {
+    background: var(--stone);
+    color: #fff;
+    box-shadow: 0 4px 0 #555, 0 6px 12px rgba(0,0,0,0.3);
+    font-size: 8px;
+    padding: 10px 20px;
+    width: auto;
+  }
+
+  .btn-back {
+    background: var(--dirt);
+    color: #fff;
+    box-shadow: 0 4px 0 var(--dirt-dark);
+    font-size: 8px;
+    padding: 10px 20px;
+    width: auto;
+  }
+
+  /* ===== GAME SCREEN ===== */
+  #screen-game {
+    background: linear-gradient(180deg, #0D1B2A 0%, #0A2240 100%);
+    padding: 16px;
+    justify-content: flex-start;
+    padding-top: 16px;
+  }
+
+  .game-topbar {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .level-badge {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    background: var(--grass);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 4px;
+    box-shadow: 0 4px 0 var(--grass-dark);
+    text-shadow: 1px 1px 0 var(--grass-dark);
+  }
+
+  .score-display {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    text-shadow: 0 0 10px var(--gold-glow);
+    text-align: right;
+  }
+
+  .score-display span { display: block; font-size: 7px; color: var(--text-dim); }
+
+  /* Progress bar */
+  .progress-track {
+    width: 100%;
+    max-width: 600px;
+    height: 10px;
+    background: rgba(0,0,0,0.4);
+    border: 2px solid var(--card-border);
+    border-radius: 2px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--grass), var(--diamond));
+    transition: width 0.5s ease;
+    box-shadow: 0 0 8px var(--diamond-glow);
+  }
+
+  /* Question q-count */
+  .q-counter {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--diamond);
+    margin-bottom: 12px;
+    text-align: center;
+    letter-spacing: 2px;
+  }
+
+  /* Question card */
+  .question-card {
+    background: rgba(26, 45, 62, 0.95);
+    border: 3px solid var(--card-border);
+    border-radius: 4px;
+    padding: 22px 20px;
+    max-width: 600px;
+    width: 100%;
+    margin-bottom: 16px;
+    position: relative;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+
+  .question-card .emoji {
+    font-size: 40px;
+    display: block;
+    text-align: center;
+    margin-bottom: 12px;
+    animation: bounce 1s ease;
+  }
+
+  @keyframes bounce {
+    0% { transform: scale(0.5); opacity: 0; }
+    60% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .question-text {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: clamp(14px, 3.5vw, 18px);
+    line-height: 1.5;
+    text-align: center;
+    color: #FFF;
+  }
+
+  /* Hint box */
+  .hint-box {
+    background: rgba(255,215,0,0.08);
+    border: 2px solid var(--gold);
+    border-radius: 4px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--gold);
+    margin-top: 12px;
+    display: none;
+    animation: fadeSlide 0.3s ease;
+  }
+
+  .hint-box.visible { display: block; }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Answer options */
+  .options-grid {
+    max-width: 600px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .option-btn {
+    background: rgba(26, 45, 62, 0.9);
+    border: 3px solid var(--card-border);
+    border-radius: 4px;
+    padding: 14px 10px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: clamp(12px, 3vw, 15px);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    line-height: 1.3;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .option-btn::before {
+    content: attr(data-letter);
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--text-dim);
+  }
+
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--diamond);
+    background: rgba(79,236,236,0.1);
+    transform: scale(1.02);
+    box-shadow: 0 0 15px rgba(79,236,236,0.2);
+  }
+
+  .option-btn.correct {
+    background: rgba(0,210,106,0.2);
+    border-color: var(--emerald);
+    color: #fff;
+    animation: correctPulse 0.4s ease;
+  }
+
+  .option-btn.wrong {
+    background: rgba(255,50,50,0.2);
+    border-color: var(--redstone);
+    color: #fff;
+    animation: shake 0.4s ease;
+  }
+
+  .option-btn.reveal-correct {
+    background: rgba(0,210,106,0.15);
+    border-color: var(--emerald);
+  }
+
+  .option-btn:disabled { cursor: not-allowed; }
+
+  @keyframes correctPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); box-shadow: 0 0 25px rgba(0,210,106,0.5); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    60% { transform: translateX(6px); }
+  }
+
+  /* Result overlay on card */
+  .result-msg {
+    text-align: center;
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(9px, 2.5vw, 12px);
+    padding: 12px;
+    border-radius: 4px;
+    margin: 10px 0;
+    max-width: 600px;
+    width: 100%;
+    display: none;
+    animation: fadeSlide 0.3s ease;
+  }
+
+  .result-msg.correct-msg {
+    background: rgba(0,210,106,0.15);
+    border: 2px solid var(--emerald);
+    color: var(--emerald);
+    display: block;
+  }
+
+  .result-msg.wrong-msg {
+    background: rgba(255,50,50,0.1);
+    border: 2px solid var(--redstone);
+    color: var(--redstone);
+    display: block;
+  }
+
+  .game-actions {
+    display: flex;
+    gap: 10px;
+    max-width: 600px;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* Hint counter */
+  .hint-counter {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--gold);
+    text-align: center;
+    margin-top: 4px;
+  }
+
+  /* ===== LEVEL COMPLETE ===== */
+  #screen-levelcomplete {
+    background: linear-gradient(180deg, #0D1B2A, #1A3A10);
+  }
+
+  .level-complete-card {
+    background: rgba(26, 45, 62, 0.95);
+    border: 3px solid var(--emerald);
+    border-radius: 4px;
+    padding: 32px 28px;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 0 50px rgba(0,210,106,0.3);
+    animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .lc-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(12px, 4vw, 20px);
+    color: var(--emerald);
+    text-shadow: 0 0 20px rgba(0,210,106,0.5);
+    margin-bottom: 8px;
+  }
+
+  .lc-stars {
+    font-size: 36px;
+    margin: 12px 0;
+    letter-spacing: 6px;
+  }
+
+  .lc-score-row {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 16px 0;
+  }
+
+  .lc-score-item {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    text-align: center;
+    line-height: 2;
+  }
+
+  .lc-score-item .big {
+    display: block;
+    font-size: 20px;
+    color: var(--gold);
+    text-shadow: 0 0 10px var(--gold-glow);
+  }
+
+  .lc-score-item .lbl { color: var(--text-dim); font-size: 6px; }
+
+  /* ===== GAME OVER ===== */
+  #screen-gameover {
+    background: linear-gradient(180deg, #0D1B2A, #1A0A0A);
+  }
+
+  .gameover-card {
+    background: rgba(26, 45, 62, 0.95);
+    border: 3px solid var(--redstone);
+    border-radius: 4px;
+    padding: 32px 28px;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 0 50px rgba(255,50,50,0.2);
+    animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .go-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(14px, 4vw, 22px);
+    color: var(--redstone);
+    text-shadow: 0 0 20px rgba(255,50,50,0.5);
+    margin-bottom: 12px;
+  }
+
+  /* ===== HIGH SCORES ===== */
+  #screen-scores {
+    background: linear-gradient(180deg, #0D1B2A, #0D1020);
+    justify-content: flex-start;
+    padding-top: 40px;
+  }
+
+  .scores-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(12px, 4vw, 18px);
+    color: var(--gold);
+    text-shadow: 0 0 20px var(--gold-glow);
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .scores-list {
+    max-width: 440px;
+    width: 100%;
+    margin-bottom: 24px;
+  }
+
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: rgba(26, 45, 62, 0.8);
+    border: 2px solid var(--card-border);
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  .score-row:first-child { border-color: var(--gold); background: rgba(255,215,0,0.08); }
+  .score-row:nth-child(2) { border-color: #C0C0C0; }
+  .score-row:nth-child(3) { border-color: var(--dirt); }
+
+  .score-rank {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    width: 28px;
+    text-align: center;
+  }
+
+  .score-row:first-child .score-rank { color: var(--gold); }
+  .score-row:nth-child(2) .score-rank { color: #C0C0C0; }
+  .score-row:nth-child(3) .score-rank { color: #CD7F32; }
+
+  .score-name {
+    flex: 1;
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  .score-pts {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--gold);
+  }
+
+  .score-lvl {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--text-dim);
+  }
+
+  /* ===== WIN SCREEN ===== */
+  #screen-win {
+    background: linear-gradient(180deg, #0D1B2A, #1A3A1A);
+  }
+
+  .win-card {
+    background: rgba(26, 45, 62, 0.95);
+    border: 4px solid var(--gold);
+    border-radius: 4px;
+    padding: 32px 28px;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 0 60px rgba(255,215,0,0.4);
+    animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .win-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(12px, 4vw, 18px);
+    color: var(--gold);
+    text-shadow: 0 0 30px var(--gold-glow);
+    margin-bottom: 8px;
+  }
+
+  /* Particles */
+  .particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 1px;
+    animation: particleFall 2s ease-in forwards;
+  }
+
+  @keyframes particleFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* General helpers */
+  .divider {
+    width: 100%;
+    height: 3px;
+    background: repeating-linear-gradient(90deg, var(--grass) 0px, var(--grass) 8px, transparent 8px, transparent 16px);
+    margin: 16px 0;
+    border-radius: 2px;
+  }
+
+  .section-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(9px, 2.5vw, 12px);
+    text-align: center;
+    margin-bottom: 16px;
+    color: var(--diamond);
+  }
+
+  .lives-display {
+    font-size: 20px;
+    letter-spacing: 4px;
+  }
+
+  /* Timer bar */
+  .timer-track {
+    width: 100%;
+    max-width: 600px;
+    height: 8px;
+    background: rgba(0,0,0,0.4);
+    border: 2px solid var(--card-border);
+    border-radius: 2px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+
+  .timer-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--emerald), var(--gold));
+    transition: width 0.1s linear;
+    box-shadow: 0 0 6px rgba(0,210,106,0.5);
+  }
+
+  .timer-fill.danger { background: linear-gradient(90deg, var(--redstone), var(--redstone-glow)); box-shadow: 0 0 10px rgba(255,50,50,0.5); }
+
+  .timer-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--text-dim);
+    text-align: right;
+    max-width: 600px;
+    width: 100%;
+    margin-bottom: 4px;
+  }
+
+  .combo-display {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--redstone);
+    text-shadow: 0 0 10px var(--redstone-glow);
+    text-align: center;
+    min-height: 20px;
+    margin-bottom: 6px;
+    animation: fadeSlide 0.3s ease;
+  }
+
+  .name-input-wrap {
+    margin: 16px 0;
+  }
+
+  .name-input-wrap input {
+    background: rgba(0,0,0,0.4);
+    border: 3px solid var(--card-border);
+    border-radius: 4px;
+    padding: 12px 16px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--text);
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .name-input-wrap input:focus { border-color: var(--diamond); box-shadow: 0 0 12px rgba(79,236,236,0.3); }
+
+  .xp-bar-wrap {
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 10px;
+  }
+
+  .xp-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: var(--lapis);
+    margin-bottom: 3px;
+  }
+
+  .xp-track {
+    height: 6px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--card-border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--lapis), var(--diamond));
+    transition: width 0.8s ease;
+  }
+
+  /* Responsive */
+  @media (max-width: 400px) {
+    .options-grid { grid-template-columns: 1fr; }
+    .game-actions { flex-direction: column; }
+    .btn { font-size: 9px; padding: 12px 16px; }
+  }
+
+  /* Floating score pop */
+  .score-pop {
+    position: fixed;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 16px;
+    color: var(--gold);
+    text-shadow: 0 0 10px var(--gold-glow);
+    pointer-events: none;
+    z-index: 999;
+    animation: scorePop 1.2s ease forwards;
+  }
+
+  @keyframes scorePop {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-80px) scale(1.4); opacity: 0; }
+  }
+
+  .no-scores {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 24px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Floating background blocks -->
+<div class="floating-blocks" id="floatingBlocks"></div>
+
+<!-- Particle effects container -->
+<div class="particles" id="particles"></div>
+
+<!-- ===== HOME SCREEN ===== -->
+<div class="screen active" id="screen-home">
+  <div class="logo-container">
+    <div class="logo-block">⛏️ MINECRAFT<br>QUIZ</div>
+    <div class="logo-sub">BLOCK MASTER</div>
+  </div>
+
+  <div class="home-card">
+    <div class="home-stats">
+      <div class="stat-badge">
+        <span class="val" id="home-highscore">0</span>
+        <span class="lbl">HIGH SCORE</span>
+      </div>
+      <div class="stat-badge">
+        <span class="val">25</span>
+        <span class="lbl">LEVELS</span>
+      </div>
+      <div class="stat-badge">
+        <span class="val">50</span>
+        <span class="lbl">QUESTIONS</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="name-input-wrap">
+      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--text-dim);margin-bottom:8px;">PLAYER NAME</div>
+      <input type="text" id="playerName" placeholder="Steve" maxlength="12">
+    </div>
+
+    <button class="btn btn-play" onclick="startGame()">▶ PLAY GAME</button>
+    <button class="btn btn-scores" onclick="showScores()">🏆 HIGH SCORES</button>
+  </div>
+
+  <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:var(--text-dim);margin-top:20px;text-align:center;line-height:2;">
+    💡 2 QUESTIONS PER LEVEL • 25 LEVELS<br>⚡ USE HINTS WISELY • COMBO BONUS!
+  </div>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div class="screen" id="screen-game">
+  <div class="game-topbar">
+    <div class="level-badge" id="levelBadge">LEVEL 1</div>
+    <div class="lives-display" id="livesDisplay">❤️❤️❤️</div>
+    <div class="score-display">
+      <span id="currentScore">0</span>
+      <span>SCORE</span>
+    </div>
+  </div>
+
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <div class="xp-bar-wrap">
+    <div class="xp-label">XP ─── <span id="xpVal">0</span>/100</div>
+    <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="timer-label">⏱ <span id="timerLabel">20s</span></div>
+  <div class="timer-track">
+    <div class="timer-fill" id="timerFill" style="width:100%"></div>
+  </div>
+
+  <div class="q-counter" id="qCounter">QUESTION 1 OF 2</div>
+  <div class="combo-display" id="comboDisplay"></div>
+
+  <div class="question-card">
+    <span class="emoji" id="questionEmoji">⛏️</span>
+    <div class="question-text" id="questionText">Loading...</div>
+    <div class="hint-box" id="hintBox">💡 Hint: Loading...</div>
+  </div>
+
+  <div class="options-grid" id="optionsGrid"></div>
+
+  <div class="result-msg" id="resultMsg"></div>
+
+  <div class="game-actions">
+    <button class="btn btn-hint" id="hintBtn" onclick="useHint()">💡 HINT (<span id="hintsLeft">3</span>)</button>
+    <button class="btn btn-skip" onclick="skipQuestion()" id="skipBtn">⏭ SKIP</button>
+    <button class="btn btn-back" onclick="goHome()">🏠 HOME</button>
+  </div>
+  <div class="hint-counter" id="hintMsg"></div>
+</div>
+
+<!-- ===== LEVEL COMPLETE SCREEN ===== -->
+<div class="screen" id="screen-levelcomplete">
+  <div class="level-complete-card">
+    <div class="lc-title" id="lcTitle">LEVEL COMPLETE!</div>
+    <div class="lc-stars" id="lcStars">⭐⭐⭐</div>
+
+    <div class="lc-score-row">
+      <div class="lc-score-item">
+        <span class="big" id="lcScore">0</span>
+        <span class="lbl">LEVEL SCORE</span>
+      </div>
+      <div class="lc-score-item">
+        <span class="big" id="lcTotal">0</span>
+        <span class="lbl">TOTAL SCORE</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div id="lcNextInfo" style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--text-dim);margin-bottom:16px;line-height:2;"></div>
+
+    <button class="btn btn-play" onclick="nextLevel()" id="lcNextBtn">NEXT LEVEL ▶</button>
+    <button class="btn btn-scores" onclick="showScores()">🏆 SCORES</button>
+    <button class="btn btn-back" onclick="goHome()">🏠 HOME</button>
+  </div>
+</div>
+
+<!-- ===== GAME OVER SCREEN ===== -->
+<div class="screen" id="screen-gameover">
+  <div class="gameover-card">
+    <div style="font-size:60px;margin-bottom:8px;">💀</div>
+    <div class="go-title">GAME OVER</div>
+    <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--text-dim);margin-bottom:16px;line-height:2;">
+      YOU RAN OUT OF LIVES!
+    </div>
+
+    <div class="lc-score-row">
+      <div class="lc-score-item">
+        <span class="big" id="goScore">0</span>
+        <span class="lbl">FINAL SCORE</span>
+      </div>
+      <div class="lc-score-item">
+        <span class="big" id="goLevel">1</span>
+        <span class="lbl">LEVEL REACHED</span>
+      </div>
+    </div>
+
+    <div id="goNewHigh" style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--gold);text-shadow:0 0 10px var(--gold-glow);margin:10px 0;display:none;">
+      🏆 NEW HIGH SCORE! 🏆
+    </div>
+
+    <div class="divider"></div>
+    <button class="btn btn-play" onclick="startGame()">▶ PLAY AGAIN</button>
+    <button class="btn btn-scores" onclick="showScores()">🏆 HIGH SCORES</button>
+    <button class="btn btn-back" onclick="goHome()">🏠 HOME</button>
+  </div>
+</div>
+
+<!-- ===== WIN SCREEN ===== -->
+<div class="screen" id="screen-win">
+  <div class="win-card">
+    <div style="font-size:60px;margin-bottom:8px;">🏆</div>
+    <div class="win-title">YOU WIN!</div>
+    <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:var(--text-dim);margin-bottom:8px;line-height:2;">
+      ALL 25 LEVELS CONQUERED!<br>YOU ARE A TRUE BLOCK MASTER!
+    </div>
+
+    <div class="lc-score-row">
+      <div class="lc-score-item">
+        <span class="big" id="winScore">0</span>
+        <span class="lbl">FINAL SCORE</span>
+      </div>
+    </div>
+
+    <div id="winNewHigh" style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--gold);text-shadow:0 0 10px var(--gold-glow);margin:10px 0;display:none;">
+      🏆 NEW HIGH SCORE! 🏆
+    </div>
+
+    <div class="divider"></div>
+    <button class="btn btn-play" onclick="startGame()">▶ PLAY AGAIN</button>
+    <button class="btn btn-scores" onclick="showScores()">🏆 HIGH SCORES</button>
+    <button class="btn btn-back" onclick="goHome()">🏠 HOME</button>
+  </div>
+</div>
+
+<!-- ===== HIGH SCORES SCREEN ===== -->
+<div class="screen" id="screen-scores">
+  <div class="scores-title">🏆 HIGH SCORES 🏆</div>
+  <div class="scores-list" id="scoresList"></div>
+  <button class="btn btn-back" style="max-width:280px;" onclick="goHome()">🏠 BACK TO HOME</button>
+  <button class="btn btn-scores" style="max-width:280px;margin-top:8px;" onclick="clearScores()">🗑 CLEAR SCORES</button>
+</div>
+
+<script>
+// ============================================================
+// QUIZ DATA — 50 Questions, 25 Levels (2 per level)
+// ============================================================
+const ALL_QUESTIONS = [
+  // Level 1 — Basics
+  { q: "Who created Minecraft?", opts: ["Notch (Markus Persson)", "Jeb_", "Phil Fish", "Todd Howard"], ans: 0, hint: "His real name is Markus Persson and his username started with 'N'.", emoji: "👨‍💻" },
+  { q: "What is the name of the company that originally made Minecraft?", opts: ["Roblox Corp", "Mojang Studios", "Valve", "Epic Games"], ans: 1, hint: "It's a Swedish game studio founded in 2009.", emoji: "🏢" },
+
+  // Level 2 — Company
+  { q: "Which company bought Mojang Studios in 2014?", opts: ["Sony", "Apple", "Microsoft", "Google"], ans: 2, hint: "They also own Xbox and Halo.", emoji: "💼" },
+  { q: "In what year was Minecraft officially released?", opts: ["2009", "2011", "2013", "2015"], ans: 1, hint: "It launched on 11/11/11 — a very symmetrical date!", emoji: "📅" },
+
+  // Level 3 — World
+  { q: "What is the main material used to craft basic tools in Minecraft?", opts: ["Iron", "Diamonds", "Wood", "Stone"], ans: 2, hint: "It's the very first thing you punch in the game.", emoji: "🪵" },
+  { q: "What is the rarest ore in vanilla Minecraft?", opts: ["Gold", "Emerald", "Netherite", "Diamond"], ans: 1, hint: "It's mostly found in mountain biomes and used for trading.", emoji: "💎" },
+
+  // Level 4 — Mobs
+  { q: "What mob explodes when it gets close to the player?", opts: ["Zombie", "Creeper", "Skeleton", "Enderman"], ans: 1, hint: "It's green, has a sad face, and was actually a bug in development!", emoji: "💥" },
+  { q: "What do you feed a wolf to tame it?", opts: ["Fish", "Carrots", "Bones", "Meat"], ans: 2, hint: "You find these by killing skeletons.", emoji: "🐺" },
+
+  // Level 5 — Dimensions
+  { q: "What is the first dimension you visit in Minecraft?", opts: ["The Nether", "The End", "The Overworld", "The Aether"], ans: 2, hint: "It's where you start your game.", emoji: "🌍" },
+  { q: "What portal takes you to The Nether?", opts: ["End Portal", "Nether Portal", "Iron Portal", "Gold Frame Portal"], ans: 1, hint: "It's made from obsidian and activated with flint and steel.", emoji: "🌋" },
+
+  // Level 6 — Crafting
+  { q: "How many planks do you need to craft a crafting table?", opts: ["2", "4", "6", "8"], ans: 1, hint: "Fill a 2x2 grid in your inventory.", emoji: "🪚" },
+  { q: "What item do you need to mine diamond ore?", opts: ["Stone Pickaxe", "Wood Pickaxe", "Iron Pickaxe", "Any Pickaxe"], ans: 2, hint: "It must be at least this tier — stone is too weak.", emoji: "⛏️" },
+
+  // Level 7 — Food
+  { q: "What food restores the most hunger in Minecraft?", opts: ["Apple", "Bread", "Golden Carrot", "Cooked Porkchop"], ans: 2, hint: "It also gives saturation — the best hunger-to-saturation ratio.", emoji: "🥕" },
+  { q: "Which animal drops beef when killed?", opts: ["Pig", "Sheep", "Cow", "Horse"], ans: 2, hint: "It also drops leather.", emoji: "🐄" },
+
+  // Level 8 — Biomes
+  { q: "Which biome is characterized by tall cactus and red sand?", opts: ["Savanna", "Desert", "Badlands", "Mesa"], ans: 1, hint: "Rain never falls here.", emoji: "🏜️" },
+  { q: "What biome has the most trees in Minecraft?", opts: ["Plains", "Taiga", "Dark Forest", "Jungle"], ans: 3, hint: "Parrots spawn here and it has the tallest trees.", emoji: "🌴" },
+
+  // Level 9 — Enchanting
+  { q: "What material is used to make an enchanting table?", opts: ["Diamonds, obsidian, books", "Gold, diamonds, paper", "Iron, glass, lapis", "Emeralds, leather, wood"], ans: 0, hint: "You need 4 obsidian, 2 diamonds, and 1 book.", emoji: "✨" },
+  { q: "What item maximizes enchanting table power?", opts: ["Bookshelves", "Chests", "Furnaces", "Anvils"], ans: 0, hint: "You need 15 of them surrounding the table for max level enchants.", emoji: "📚" },
+
+  // Level 10 — The Nether
+  { q: "What is the most dangerous mob boss in The Nether?", opts: ["Wither", "Ghast", "Blaze", "Wither Skeleton"], ans: 0, hint: "You have to build and spawn it yourself using soul sand and skulls.", emoji: "💀" },
+  { q: "What block is unique to the Nether and used to make portals?", opts: ["Bedrock", "Obsidian", "Netherrack", "Glowstone"], ans: 1, hint: "It takes 10 seconds to mine and is blast-resistant.", emoji: "🌑" },
+
+  // Level 11 — The End
+  { q: "What is the final boss of Minecraft?", opts: ["Wither", "Elder Guardian", "Ender Dragon", "Giant"], ans: 2, hint: "It flies around in The End and you must destroy its crystals.", emoji: "🐉" },
+  { q: "What structure do you find at the center of The End?", opts: ["End City", "Obsidian Pillars", "Stronghold", "End Gateway"], ans: 1, hint: "These tall black columns have End Crystals on top.", emoji: "🗼" },
+
+  // Level 12 — Items
+  { q: "What item lets you see through walls when held?", opts: ["Nothing", "Spyglass", "End Crystal", "Ender Eye"], ans: 1, hint: "Craft it with copper and amethyst. Added in 1.17.", emoji: "🔭" },
+  { q: "What is used to repair tools and combine enchantments?", opts: ["Crafting Table", "Grindstone", "Anvil", "Smithing Table"], ans: 2, hint: "It costs experience levels and can be expensive for high-tier gear.", emoji: "⚒️" },
+
+  // Level 13 — Redstone
+  { q: "What is Redstone equivalent to in the real world?", opts: ["Water pipes", "Electrical circuits", "Steam engines", "Levers and ropes"], ans: 1, hint: "It can power pistons, doors, and automated farms.", emoji: "🔴" },
+  { q: "Which block emits a Redstone signal when stepped on?", opts: ["Stone Button", "Pressure Plate", "Lever", "Observer"], ans: 1, hint: "Mobs and players both activate this.", emoji: "🟫" },
+
+  // Level 14 — Animals
+  { q: "Which Minecraft animal can be ridden after taming?", opts: ["Cow", "Pig with a saddle", "Horse", "Both B and C"], ans: 3, hint: "You need a saddle for both — but horses are tamed by repeated riding.", emoji: "🐴" },
+  { q: "What do you feed to breed chickens?", opts: ["Wheat", "Seeds", "Bread", "Apples"], ans: 1, hint: "These drop from breaking tall grass.", emoji: "🐔" },
+
+  // Level 15 — Achievements / Advancements
+  { q: "What is the first advancement in Minecraft?", opts: ["Getting Wood", "Stone Age", "Minecraft", "Acquire Hardware"], ans: 2, hint: "It's triggered just by opening your inventory.", emoji: "📋" },
+  { q: "What does 'The End?' advancement require?", opts: ["Killing the Wither", "Entering The End", "Killing the Ender Dragon", "Finding a Stronghold"], ans: 2, hint: "It's the final main story advancement.", emoji: "🎯" },
+
+  // Level 16 — Potions
+  { q: "What base ingredient is used for almost all potions?", opts: ["Nether Wart", "Blaze Powder", "Fermented Spider Eye", "Glistering Melon"], ans: 0, hint: "You find it in Nether Fortresses.", emoji: "🧪" },
+  { q: "What effect does a Potion of Swiftness give?", opts: ["Jump boost", "Increased speed", "Night vision", "Slow falling"], ans: 1, hint: "Sugar is the key ingredient.", emoji: "⚡" },
+
+  // Level 17 — Structure Trivia
+  { q: "Where do you find the End Portal frame?", opts: ["Woodland Mansion", "Stronghold", "Desert Temple", "Pillager Outpost"], ans: 1, hint: "Use Eyes of Ender to locate it underground.", emoji: "🏰" },
+  { q: "What structure spawns Pillagers?", opts: ["Witch Hut", "Pillager Outpost", "Raid Camp", "Fort Illager"], ans: 1, hint: "It's a tall dark oak tower found in various biomes.", emoji: "🗺️" },
+
+  // Level 18 — History
+  { q: "What was Minecraft's original name during development?", opts: ["Block Game", "Cave Game", "Pixel World", "Sandbox"], ans: 1, hint: "Notch posted a video of it very early — it had no mobs.", emoji: "🕹️" },
+  { q: "Which edition of Minecraft was originally called 'Pocket Edition'?", opts: ["Java Edition", "Bedrock Edition", "Education Edition", "Legacy Console"], ans: 1, hint: "It's now the version on phones, consoles, and Windows 10.", emoji: "📱" },
+
+  // Level 19 — Netherite
+  { q: "What ore do you smelt to get Netherite Scrap?", opts: ["Basalt Ore", "Ancient Debris", "Quartz Ore", "Gilded Blackstone"], ans: 1, hint: "It's blast-resistant and found deep in the Nether.", emoji: "⚫" },
+  { q: "How many Netherite Scraps does it take to make one Netherite Ingot?", opts: ["2", "3", "4", "6"], ans: 2, hint: "You also need 4 gold ingots combined on a crafting table.", emoji: "🔩" },
+
+  // Level 20 — Education
+  { q: "What edition of Minecraft is designed for schools?", opts: ["Java Edition", "Bedrock Edition", "Education Edition", "Classic Edition"], ans: 2, hint: "It includes classroom tools and coding features.", emoji: "🎓" },
+  { q: "What language can be used to code in Minecraft Education Edition?", opts: ["Python", "MakeCode (Scratch-like)", "JavaScript", "All of the above"], ans: 3, hint: "It supports multiple coding environments.", emoji: "💻" },
+
+  // Level 21 — Jeb / Dev
+  { q: "What is the username of Mojang's lead designer (Jens Bergensten)?", opts: ["jeb_", "Herobrine", "notch", "C418"], ans: 0, hint: "Rename a sheep this name for a surprise!", emoji: "🎨" },
+  { q: "Who composed most of Minecraft's original soundtrack?", opts: ["Hans Zimmer", "C418", "Toby Fox", "Lena Raine"], ans: 1, hint: "His real name is Daniel Rosenfeld.", emoji: "🎵" },
+
+  // Level 22 — Villagers
+  { q: "What do Villagers use as currency?", opts: ["Diamonds", "Emeralds", "Gold", "Lapis Lazuli"], ans: 1, hint: "This green gem is primarily found in mountains.", emoji: "🟢" },
+  { q: "What profession does a Villager with a Cartography Table have?", opts: ["Librarian", "Cleric", "Cartographer", "Toolsmith"], ans: 2, hint: "They sell maps to Woodland Mansions and Ocean Monuments.", emoji: "🗺️" },
+
+  // Level 23 — 1.18/1.19
+  { q: "What new mob was added in Minecraft 1.19 (The Wild Update)?", opts: ["Allay", "Warden", "Frog", "All of the above"], ans: 3, hint: "This update added a whole lot of new creatures!", emoji: "🐸" },
+  { q: "What is the Warden's main detection ability?", opts: ["Sight only", "Smell", "Vibration and smell", "Echolocation"], ans: 2, hint: "Sneaking and wool blocks can reduce vibrations.", emoji: "👁️" },
+
+  // Level 24 — Advanced
+  { q: "What is the maximum enchantment level for Efficiency?", opts: ["IV", "V", "III", "X"], ans: 1, hint: "Roman numeral 5.", emoji: "⚡" },
+  { q: "What structure contains the only naturally-spawning Elytra?", opts: ["End City Ship", "Bastion Remnant", "Nether Fortress", "Stronghold"], ans: 0, hint: "Look for the small flying ship in The End's outer islands.", emoji: "🛸" },
+
+  // Level 25 — Master
+  { q: "How many total blocks wide is a standard Nether portal (minimum)?", opts: ["2x3", "2x4", "3x5", "4x6"], ans: 0, hint: "Minimum is 2 wide and 3 tall — not counting the corners.", emoji: "🔲" },
+  { q: "What year did Microsoft officially acquire Mojang Studios?", opts: ["2012", "2013", "2014", "2015"], ans: 2, hint: "The deal was worth $2.5 billion USD.", emoji: "📰" },
+];
+
+// ============================================================
+// GAME STATE
+// ============================================================
+let state = {
+  screen: 'home',
+  playerName: 'Steve',
+  level: 1,
+  questionIndex: 0, // 0 or 1 per level
+  score: 0,
+  levelScore: 0,
+  lives: 3,
+  hintsLeft: 3,
+  combo: 0,
+  answered: false,
+  timerInterval: null,
+  timerValue: 20,
+  xp: 0,
+};
+
+const TOTAL_LEVELS = 25;
+const Q_PER_LEVEL = 2;
+const TIMER_MAX = 20;
+
+// ============================================================
+// FLOATING BLOCKS SETUP
+// ============================================================
+(function setupBlocks() {
+  const container = document.getElementById('floatingBlocks');
+  const classes = ['block-grass','block-dirt','block-stone','block-diamond','block-gold'];
+  for (let i = 0; i < 18; i++) {
+    const d = document.createElement('div');
+    d.className = 'block ' + classes[Math.floor(Math.random() * classes.length)];
+    d.style.left = Math.random() * 100 + 'vw';
+    d.style.width = d.style.height = (16 + Math.random() * 24) + 'px';
+    d.style.animationDuration = (8 + Math.random() * 14) + 's';
+    d.style.animationDelay = -(Math.random() * 20) + 's';
+    container.appendChild(d);
+  }
+})();
+
+// ============================================================
+// SCREEN MANAGEMENT
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  state.screen = id;
+}
+
+// ============================================================
+// GAME FLOW
+// ============================================================
+function startGame() {
+  const nameInput = document.getElementById('playerName');
+  state.playerName = nameInput ? (nameInput.value.trim() || 'Steve') : 'Steve';
+  state.level = 1;
+  state.score = 0;
+  state.lives = 3;
+  state.hintsLeft = 3;
+  state.combo = 0;
+  state.xp = 0;
+  loadLevel();
+  showScreen('game');
+}
+
+function loadLevel() {
+  state.questionIndex = 0;
+  state.levelScore = 0;
+  updateTopBar();
+  loadQuestion();
+}
+
+function loadQuestion() {
+  state.answered = false;
+  clearTimer();
+
+  const qi = (state.level - 1) * Q_PER_LEVEL + state.questionIndex;
+  const qdata = ALL_QUESTIONS[qi];
+
+  // Update UI
+  document.getElementById('qCounter').textContent = `QUESTION ${state.questionIndex + 1} OF ${Q_PER_LEVEL}`;
+  document.getElementById('questionEmoji').textContent = qdata.emoji;
+  document.getElementById('questionText').textContent = qdata.q;
+  document.getElementById('hintBox').textContent = '💡 Hint: ' + qdata.hint;
+  document.getElementById('hintBox').classList.remove('visible');
+  document.getElementById('resultMsg').className = 'result-msg';
+  document.getElementById('comboDisplay').textContent = state.combo > 1 ? `🔥 COMBO x${state.combo}!` : '';
+
+  // Rebuild options
+  const grid = document.getElementById('optionsGrid');
+  grid.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  qdata.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.setAttribute('data-letter', letters[i]);
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(i, btn, qdata.ans, qi);
+    grid.appendChild(btn);
+  });
+
+  // Update hint button
+  document.getElementById('hintBtn').disabled = state.hintsLeft <= 0;
+  document.getElementById('hintsLeft').textContent = state.hintsLeft;
+  document.getElementById('skipBtn').style.display = 'inline-block';
+
+  startTimer();
+}
+
+function updateTopBar() {
+  document.getElementById('levelBadge').textContent = `LEVEL ${state.level}`;
+  document.getElementById('currentScore').textContent = state.score;
+  document.getElementById('livesDisplay').textContent = '❤️'.repeat(state.lives) + '🖤'.repeat(Math.max(0, 3 - state.lives));
+  const progress = ((state.level - 1) / TOTAL_LEVELS) * 100;
+  document.getElementById('progressFill').style.width = progress + '%';
+  const xpPct = Math.min(100, state.xp % 100);
+  document.getElementById('xpFill').style.width = xpPct + '%';
+  document.getElementById('xpVal').textContent = state.xp;
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+function startTimer() {
+  state.timerValue = TIMER_MAX;
+  updateTimerUI();
+  state.timerInterval = setInterval(() => {
+    state.timerValue -= 0.1;
+    if (state.timerValue <= 0) {
+      state.timerValue = 0;
+      clearTimer();
+      onTimeout();
+    }
+    updateTimerUI();
+  }, 100);
+}
+
+function updateTimerUI() {
+  const pct = (state.timerValue / TIMER_MAX) * 100;
+  const fill = document.getElementById('timerFill');
+  fill.style.width = pct + '%';
+  fill.classList.toggle('danger', state.timerValue < 6);
+  document.getElementById('timerLabel').textContent = Math.ceil(state.timerValue) + 's';
+}
+
+function clearTimer() {
+  clearInterval(state.timerInterval);
+}
+
+function onTimeout() {
+  if (state.answered) return;
+  state.answered = true;
+  state.combo = 0;
+  loseLife();
+  revealCorrect();
+  showResult(false, "⏱ TIME'S UP!", true);
+  setTimeout(advance, 1800);
+}
+
+// ============================================================
+// ANSWER LOGIC
+// ============================================================
+function selectAnswer(chosen, btn, correct, qi) {
+  if (state.answered) return;
+  state.answered = true;
+  clearTimer();
+
+  const allBtns = document.querySelectorAll('.option-btn');
+  allBtns.forEach(b => b.disabled = true);
+
+  if (chosen === correct) {
+    btn.classList.add('correct');
+    const timeBonus = Math.floor(state.timerValue * 5);
+    const comboBonus = state.combo * 10;
+    const pts = 100 + timeBonus + comboBonus;
+    state.score += pts;
+    state.levelScore += pts;
+    state.combo++;
+    state.xp += 20;
+    showScorePop('+' + pts, btn);
+    showResult(true, `✅ CORRECT! +${pts} PTS`);
+    spawnParticles(true);
+  } else {
+    btn.classList.add('wrong');
+    revealCorrect();
+    state.combo = 0;
+    loseLife();
+    showResult(false, '❌ WRONG!');
+    spawnParticles(false);
+  }
+
+  updateTopBar();
+
+  if (state.lives <= 0) {
+    setTimeout(gameOver, 1600);
+    return;
+  }
+  setTimeout(advance, 1700);
+}
+
+function revealCorrect() {
+  const qi = (state.level - 1) * Q_PER_LEVEL + state.questionIndex;
+  const correct = ALL_QUESTIONS[qi].ans;
+  const allBtns = document.querySelectorAll('.option-btn');
+  if (allBtns[correct]) allBtns[correct].classList.add('reveal-correct');
+}
+
+function loseLife() {
+  state.lives = Math.max(0, state.lives - 1);
+  updateTopBar();
+}
+
+function showResult(correct, msg) {
+  const el = document.getElementById('resultMsg');
+  el.textContent = msg;
+  el.className = 'result-msg ' + (correct ? 'correct-msg' : 'wrong-msg');
+}
+
+function advance() {
+  if (state.lives <= 0) return;
+  state.questionIndex++;
+  if (state.questionIndex >= Q_PER_LEVEL) {
+    levelComplete();
+  } else {
+    loadQuestion();
+  }
+}
+
+// ============================================================
+// HINT & SKIP
+// ============================================================
+function useHint() {
+  if (state.hintsLeft <= 0 || state.answered) return;
+  state.hintsLeft--;
+  document.getElementById('hintBox').classList.add('visible');
+  document.getElementById('hintBtn').disabled = state.hintsLeft <= 0;
+  document.getElementById('hintsLeft').textContent = state.hintsLeft;
+  if (state.hintsLeft === 0) document.getElementById('hintMsg').textContent = 'No hints remaining!';
+}
+
+function skipQuestion() {
+  if (state.answered) return;
+  clearTimer();
+  state.answered = true;
+  state.combo = 0;
+  revealCorrect();
+  showResult(false, '⏭ SKIPPED — No points!');
+  setTimeout(advance, 1600);
+}
+
+// ============================================================
+// LEVEL COMPLETE
+// ============================================================
+function levelComplete() {
+  clearTimer();
+  showScreen('levelcomplete');
+
+  const perfect = state.levelScore >= 250;
+  const good = state.levelScore >= 150;
+  document.getElementById('lcTitle').textContent = `LEVEL ${state.level} COMPLETE!`;
+  document.getElementById('lcStars').textContent = perfect ? '⭐⭐⭐' : good ? '⭐⭐' : '⭐';
+  document.getElementById('lcScore').textContent = state.levelScore;
+  document.getElementById('lcTotal').textContent = state.score;
+
+  if (state.level >= TOTAL_LEVELS) {
+    document.getElementById('lcNextBtn').textContent = '🏆 FINISH!';
+    document.getElementById('lcNextInfo').textContent = 'Final level complete!';
+  } else {
+    document.getElementById('lcNextBtn').textContent = `LEVEL ${state.level + 1} ▶`;
+    document.getElementById('lcNextInfo').textContent = `Get ready for Level ${state.level + 1}!`;
+  }
+
+  spawnParticles(true);
+}
+
+function nextLevel() {
+  if (state.level >= TOTAL_LEVELS) {
+    winGame();
+    return;
+  }
+  state.level++;
+  loadLevel();
+  showScreen('game');
+}
+
+// ============================================================
+// GAME OVER / WIN
+// ============================================================
+function gameOver() {
+  clearTimer();
+  showScreen('gameover');
+  document.getElementById('goScore').textContent = state.score;
+  document.getElementById('goLevel').textContent = state.level;
+
+  const isHigh = saveScore(state.playerName, state.score, state.level);
+  document.getElementById('goNewHigh').style.display = isHigh ? 'block' : 'none';
+}
+
+function winGame() {
+  clearTimer();
+  showScreen('win');
+  document.getElementById('winScore').textContent = state.score;
+
+  const isHigh = saveScore(state.playerName, state.score, TOTAL_LEVELS);
+  document.getElementById('winNewHigh').style.display = isHigh ? 'block' : 'none';
+  spawnParticles(true);
+  setTimeout(() => spawnParticles(true), 500);
+}
+
+// ============================================================
+// HIGH SCORES (localStorage)
+// ============================================================
+function saveScore(name, score, level) {
+  let scores = getScores();
+  const prev = scores.find(s => s.name === name);
+  let isNew = false;
+  if (!prev || score > prev.score) {
+    scores = scores.filter(s => s.name !== name);
+    scores.push({ name, score, level, date: new Date().toLocaleDateString() });
+    scores.sort((a, b) => b.score - a.score);
+    scores = scores.slice(0, 10);
+    try { localStorage.setItem('mc_quiz_scores', JSON.stringify(scores)); } catch(e){}
+    isNew = true;
+  }
+  updateHomeHighScore();
+  return isNew;
+}
+
+function getScores() {
+  try {
+    return JSON.parse(localStorage.getItem('mc_quiz_scores') || '[]');
+  } catch(e) { return []; }
+}
+
+function updateHomeHighScore() {
+  const scores = getScores();
+  const best = scores.length > 0 ? scores[0].score : 0;
+  document.getElementById('home-highscore').textContent = best;
+}
+
+function showScores() {
+  const scores = getScores();
+  const list = document.getElementById('scoresList');
+  if (scores.length === 0) {
+    list.innerHTML = '<div class="no-scores">NO SCORES YET!<br><br>BE THE FIRST TO PLAY!</div>';
+  } else {
+    const medals = ['🥇','🥈','🥉'];
+    list.innerHTML = scores.map((s, i) => `
+      <div class="score-row">
+        <span class="score-rank">${medals[i] || (i+1)}</span>
+        <span class="score-name">${s.name}</span>
+        <div>
+          <div class="score-pts">${s.score} PTS</div>
+          <div class="score-lvl">LVL ${s.level} • ${s.date}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+  showScreen('scores');
+}
+
+function clearScores() {
+  if (confirm('Clear all high scores?')) {
+    try { localStorage.removeItem('mc_quiz_scores'); } catch(e){}
+    showScores();
+    updateHomeHighScore();
+  }
+}
+
+function goHome() {
+  clearTimer();
+  showScreen('home');
+  updateHomeHighScore();
+}
+
+// ============================================================
+// PARTICLES
+// ============================================================
+function spawnParticles(success) {
+  const colors = success
+    ? ['#5D9C22','#FFD700','#4FECEC','#00D26A','#FFFFFF']
+    : ['#FF3333','#FF6B6B','#8A8A8A','#C4A35A'];
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.top = Math.random() * 60 + 'vh';
+    p.style.width = p.style.height = (6 + Math.random() * 10) + 'px';
+    p.style.animationDuration = (0.8 + Math.random() * 1.2) + 's';
+    p.style.animationDelay = (Math.random() * 0.4) + 's';
+    container.appendChild(p);
+    setTimeout(() => p.remove(), 2500);
+  }
+}
+
+function showScorePop(text, refBtn) {
+  const pop = document.createElement('div');
+  pop.className = 'score-pop';
+  pop.textContent = text;
+  const rect = refBtn ? refBtn.getBoundingClientRect() : { left: window.innerWidth/2, top: window.innerHeight/2 };
+  pop.style.left = (rect.left + rect.width/2 - 30) + 'px';
+  pop.style.top = (rect.top - 10) + 'px';
+  document.body.appendChild(pop);
+  setTimeout(() => pop.remove(), 1300);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+updateHomeHighScore();
+</script>
+</body>
+</html>
